@@ -1,0 +1,608 @@
+<title>Punjabi Reader</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&display=swap">
+
+<style>
+  :root {
+    color-scheme: light;
+    --canvas:       #fffaf0;
+    --surface-soft: #faf5e8;
+    --surface-card: #f5f0e0;
+    --surface-strong:#ebe6d6;
+    --ink:          #0a0a0a;
+    --body:         #3a3a3a;
+    --muted:        #6a6a6a;
+    --muted-soft:   #9a9a9a;
+    --hairline:     #e5e5e5;
+    --primary:      #0a0a0a;
+    --on-primary:   #ffffff;
+
+    --pink:     #ff4d8b;
+    --teal:     #1a3a3a;
+    --lavender: #b8a4ed;
+    --peach:    #ffb084;
+    --ochre:    #e8b94a;
+    --mint:     #a4d4c5;
+    --coral:    #ff6b5a;
+
+    --hl:        rgba(232,185,74,0.55);
+    --hl-strong: rgba(232,185,74,0.92);
+
+    --r-md: 12px;
+    --r-lg: 16px;
+    --r-xl: 24px;
+    --r-pill: 9999px;
+
+    --shadow: 0 18px 46px -20px rgba(40,30,10,0.28);
+
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --guru: "Noto Sans Gurmukhi", "Inter", sans-serif;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--body);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- top nav ---------- */
+  .nav {
+    position: sticky; top: 0; z-index: 40;
+    background: var(--canvas);
+    border-bottom: 1px solid var(--hairline);
+  }
+  .nav-inner {
+    max-width: 1000px; margin: 0 auto; padding: 14px 24px;
+    display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+  }
+  .wordmark { display: inline-flex; align-items: baseline; gap: 8px; }
+  .wordmark .g {
+    font-family: var(--guru); font-weight: 700; font-size: 22px; color: var(--ink);
+    letter-spacing: 0;
+  }
+  .wordmark .en {
+    font-family: var(--sans); font-weight: 600; font-size: 15px; color: var(--ink);
+    letter-spacing: -0.2px;
+  }
+  .tabs { display: inline-flex; gap: 6px; margin-left: auto; background: var(--surface-card); padding: 5px; border-radius: var(--r-pill); }
+  .tab {
+    appearance: none; border: 0; cursor: pointer;
+    font-family: var(--sans); font-weight: 500; font-size: 14px;
+    color: var(--muted); background: transparent;
+    padding: 8px 18px; border-radius: var(--r-pill);
+    transition: background .16s, color .16s;
+  }
+  .tab[aria-selected="true"] { background: var(--primary); color: var(--on-primary); }
+
+  main { max-width: 1000px; margin: 0 auto; padding: 0 24px 100px; }
+
+  /* ---------- hero ---------- */
+  .hero { padding: 56px 0 34px; }
+  .eyebrow {
+    font-family: var(--sans); font-weight: 600; font-size: 12px;
+    letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted);
+    margin: 0 0 16px;
+  }
+  .eyebrow .dot { color: var(--pink); }
+  h1 {
+    font-family: var(--sans); font-weight: 500;
+    font-size: clamp(34px, 6vw, 56px); line-height: 1.03; letter-spacing: -2px;
+    color: var(--ink); margin: 0; text-wrap: balance;
+  }
+  .hero p.sub {
+    font-size: 17px; color: var(--body); margin: 18px 0 0; max-width: 52ch;
+  }
+
+  /* ---------- readings ---------- */
+  .reading { margin-top: 40px; }
+  .reading-head { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; flex-wrap: wrap; }
+  .badge {
+    font-family: var(--sans); font-weight: 600; font-size: 12px; letter-spacing: 1px;
+    text-transform: uppercase; color: var(--ink);
+    background: var(--ochre); padding: 5px 12px; border-radius: var(--r-pill);
+  }
+  .reading.c1 .badge { background: var(--pink); color: #fff; }
+  .reading.c2 .badge { background: var(--lavender); }
+  .reading.c3 .badge { background: var(--ochre); }
+  .reading-head h2 {
+    font-family: var(--sans); font-weight: 500; font-size: clamp(24px, 4vw, 34px);
+    letter-spacing: -1px; color: var(--ink); margin: 0;
+  }
+  .reading-head .gt {
+    font-family: var(--guru); font-weight: 500; font-size: 18px; color: var(--muted);
+  }
+  .card {
+    background: var(--canvas); border: 1px solid var(--hairline);
+    border-radius: var(--r-lg); padding: 30px 32px;
+  }
+  .passage {
+    font-family: var(--guru); font-weight: 400;
+    font-size: 22px; line-height: 2.1; color: var(--ink);
+  }
+  .passage p { margin: 0 0 1em; }
+  .passage p:last-child { margin-bottom: 0; }
+  .passage .latin { font-family: var(--sans); font-style: italic; font-size: 0.9em; }
+
+  .v {
+    display: inline; font: inherit; color: inherit; cursor: pointer;
+    appearance: none; -webkit-appearance: none;
+    border: 0; margin: 0; padding: 0 1px; background-color: transparent;
+    background-image: linear-gradient(to top, var(--hl) 0 0.20em, transparent 0.20em);
+    background-repeat: no-repeat; border-radius: 3px;
+    transition: background-image .14s ease;
+  }
+  .v:hover { background-image: linear-gradient(to top, var(--hl-strong) 0 0.30em, transparent 0.30em); }
+  .v.active { background-image: linear-gradient(to top, var(--hl-strong) 0 100%, var(--hl-strong) 0); }
+  .v:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  .tip {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--surface-card); border-radius: var(--r-pill);
+    padding: 8px 16px; margin-top: 22px;
+    font-size: 13px; font-weight: 500; color: var(--muted);
+  }
+  .tip .sw { width: 20px; height: 8px; border-radius: 3px; background: var(--hl-strong); }
+
+  /* ---------- popover ---------- */
+  .pop {
+    position: fixed; z-index: 60; max-width: 290px;
+    background: var(--surface-card); border: 1px solid var(--hairline);
+    border-radius: var(--r-lg); padding: 18px 20px;
+    box-shadow: var(--shadow);
+    opacity: 0; visibility: hidden; transform: translateY(6px);
+    transition: opacity .15s ease, transform .15s ease;
+  }
+  .pop.show { opacity: 1; visibility: visible; transform: none; }
+  .pop .lbl {
+    font-family: var(--sans); font-weight: 600; font-size: 11px; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+  }
+  .pop .pw { font-family: var(--guru); font-weight: 600; font-size: 28px; line-height: 1.2; color: var(--ink); }
+  .pop .ptl { font-family: var(--sans); font-weight: 500; font-size: 14px; color: var(--muted); margin-top: 4px; letter-spacing: 0.2px; }
+  .pop .pdef {
+    font-family: var(--sans); font-weight: 600; font-size: 18px; color: var(--ink);
+    margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--hairline); line-height: 1.35;
+  }
+
+  /* ---------- index cards ---------- */
+  .filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 30px; }
+  .chip {
+    appearance: none; border: 1px solid var(--hairline); cursor: pointer;
+    font-family: var(--sans); font-weight: 500; font-size: 13px;
+    color: var(--muted); background: transparent;
+    padding: 8px 15px; border-radius: var(--r-pill);
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .chip[aria-pressed="true"] { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+
+  .deck { display: flex; flex-direction: column; align-items: center; gap: 26px; }
+  .flashcard { width: 100%; max-width: 560px; min-height: 340px; perspective: 1800px; cursor: pointer; }
+  .fc-inner {
+    position: relative; width: 100%; min-height: 340px;
+    transition: transform .5s cubic-bezier(.4,.15,.2,1); transform-style: preserve-3d;
+  }
+  .flashcard.flipped .fc-inner { transform: rotateY(180deg); }
+  .fc-face {
+    position: absolute; inset: 0; backface-visibility: hidden;
+    border-radius: var(--r-xl); padding: 40px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  }
+  .fc-front { background: var(--pink); }
+  .fc-front .tag, .fc-back .tag {
+    position: absolute; top: 20px; left: 22px;
+    font-family: var(--sans); font-weight: 600; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;
+    opacity: 0.75;
+  }
+  .fc-front .grp {
+    position: absolute; top: 20px; right: 22px;
+    font-family: var(--sans); font-weight: 600; font-size: 11px; letter-spacing: 0.6px;
+    opacity: 0.8;
+  }
+  .fc-front .word { font-family: var(--guru); font-weight: 700; font-size: clamp(46px, 11vw, 72px); line-height: 1.15; }
+  .fc-front .hint { font-family: var(--sans); font-weight: 500; font-size: 13px; margin-top: 22px; opacity: 0.8; }
+  .fc-back { background: var(--surface-card); border: 1px solid var(--hairline); transform: rotateY(180deg); color: var(--ink); }
+  .fc-back .tag { color: var(--muted); }
+  .fc-back .en { font-family: var(--sans); font-weight: 600; font-size: clamp(26px, 6vw, 38px); line-height: 1.15; letter-spacing: -0.8px; color: var(--ink); text-wrap: balance; }
+  .fc-back .tl { font-family: var(--sans); font-weight: 500; font-size: 15px; color: var(--muted); margin-top: 14px; letter-spacing: 0.2px; }
+  .fc-back .gw { font-family: var(--guru); font-weight: 600; font-size: 30px; color: var(--ink); margin-top: 18px; }
+
+  .controls { display: flex; align-items: center; gap: 10px; }
+  .btn {
+    appearance: none; cursor: pointer; font-family: var(--sans); font-weight: 600; font-size: 14px;
+    border: 1px solid var(--hairline); background: var(--canvas); color: var(--ink);
+    padding: 11px 22px; border-radius: var(--r-md); height: 44px;
+    transition: border-color .15s, background .15s;
+  }
+  .btn:hover { border-color: var(--ink); }
+  .btn.primary { background: var(--primary); color: var(--on-primary); border-color: var(--primary); }
+  .btn.primary:hover { background: #1f1f1f; }
+  .progress { font-family: var(--sans); font-weight: 600; font-size: 14px; color: var(--muted); min-width: 80px; text-align: center; font-variant-numeric: tabular-nums; }
+  .opts { display: flex; align-items: center; gap: 16px; font-family: var(--sans); font-size: 13px; font-weight: 500; color: var(--muted); }
+  .opts label { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+  .opts input { accent-color: var(--pink); }
+
+  footer {
+    max-width: 1000px; margin: 0 auto; padding: 26px 24px 40px;
+    border-top: 1px solid var(--hairline);
+    font-family: var(--sans); font-size: 13px; color: var(--muted-soft);
+  }
+
+  [hidden] { display: none !important; }
+
+  @media (max-width: 640px) {
+    .nav-inner { gap: 12px; }
+    .tabs { margin-left: 0; width: 100%; justify-content: center; }
+    .card { padding: 22px 20px; }
+    .passage { font-size: 20px; line-height: 2.05; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .fc-inner, .pop, .v, .tab, .chip { transition: none; }
+  }
+</style>
+
+<div class="nav">
+  <div class="nav-inner">
+    <span class="wordmark"><span class="g">ਪੰਜਾਬੀ</span><span class="en">Reader</span></span>
+    <div class="tabs" role="tablist" aria-label="Views">
+      <button class="tab" id="tab-read" role="tab" aria-selected="true" onclick="showTab('read')">Readings</button>
+      <button class="tab" id="tab-cards" role="tab" aria-selected="false" onclick="showTab('cards')">Index Cards</button>
+    </div>
+  </div>
+</div>
+
+<main>
+  <!-- ==================== READINGS ==================== -->
+  <div id="view-read">
+    <section class="hero">
+      <p class="eyebrow">ਪੰਜਾਬੀ <span class="dot">·</span> Reading practice</p>
+      <h1>Read a passage. Tap a word.</h1>
+      <p class="sub">Three short Punjabi passages, written out in full. Every highlighted word is one to learn: tap it to see its pronunciation and meaning.</p>
+      <span class="tip"><span class="sw"></span> highlighted = tap to define</span>
+    </section>
+
+    <section class="reading c1">
+      <div class="reading-head">
+        <span class="badge">Reading 01</span>
+        <h2>Cinema</h2>
+        <span class="gt">ਸਿਨੇਮਾ</span>
+      </div>
+      <div class="card">
+        <div class="passage">
+          <p>ਜਦੋਂ ਕੋਈ ਵਿਅਕਤੀ ਆਪਣੀ <button class="v" data-tl="rozaana" data-def="daily (life)">ਰੋਜ਼ਾਨਾ</button> ਦੀ ਭੱਜ-ਦੌੜ ਅਤੇ <button class="v" data-tl="tanaa" data-def="stress · tension">ਤਣਾਅ</button> ਤੋਂ ਥੱਕ ਜਾਂਦਾ ਹੈ, ਤਾਂ ਫ਼ਿਲਮ ਦੇਖਣਾ ਉਸ ਲਈ ਕੁਝ ਸਮੇਂ ਲਈ <button class="v" data-tl="aapniaan" data-def="one's own">ਆਪਣੀਆਂ</button> <button class="v" data-tl="chintaavaan" data-def="worries">ਚਿੰਤਾਵਾਂ</button> ਤੋਂ ਦੂਰ ਹੋ ਕੇ ਆਰਾਮ ਕਰਨ ਅਤੇ ਆਪਣੇ ਮਨ ਨੂੰ ਤਾਜ਼ਾ ਕਰਨ ਦਾ ਇੱਕ ਵਧੀਆ <button class="v" data-tl="tareekaa" data-def="way · method">ਤਰੀਕਾ</button> ਹੋ ਸਕਦਾ ਹੈ। ਚੰਗੀਆਂ ਫ਼ਿਲਮਾਂ ਸਾਨੂੰ <button class="v" data-tl="vakh-vakh" data-def="different · various">ਵੱਖ-ਵੱਖ</button> ਲੋਕਾਂ ਦੀ <button class="v" data-tl="zindagi" data-def="life">ਜ਼ਿੰਦਗੀ</button> ਅਤੇ ਉਨ੍ਹਾਂ ਦੇ <button class="v" data-tl="tajarbiaan" data-def="experiences">ਤਜਰਬਿਆਂ</button> ਨਾਲ ਜੋੜਦੀਆਂ ਹਨ, ਜਿਸ ਕਰਕੇ ਸਾਡੇ ਅੰਦਰ ਦੂਜਿਆਂ ਦੀਆਂ <button class="v" data-tl="mushkalaan" data-def="struggles · difficulties">ਮੁਸ਼ਕਲਾਂ</button> ਅਤੇ ਭਾਵਨਾਵਾਂ ਨੂੰ ਸਮਝਣ ਦੀ <button class="v" data-tl="samrattha" data-def="capability">ਸਮਰੱਥਾ</button> ਵੀ ਵਧ ਸਕਦੀ ਹੈ।</p>
+          <p>ਸਿਨੇਮਾ ਕਿਸੇ ਵਿਅਕਤੀ ਦੀ ਸੋਚ ਅਤੇ <button class="v" data-tl="nazarie" data-def="perspective">ਨਜ਼ਰੀਏ</button> ਨੂੰ ਵੀ <button class="v" data-tl="prabhaavit" data-def="to influence · affect">ਪ੍ਰਭਾਵਿਤ</button> ਕਰ ਸਕਦਾ ਹੈ, ਕਿਉਂਕਿ ਫ਼ਿਲਮਾਂ ਵਿੱਚ ਦਿਖਾਏ ਗਏ <button class="v" data-tl="kirdaar" data-def="character(s)">ਕਿਰਦਾਰ</button> ਅਤੇ ਸਮਾਜਿਕ ਮੁੱਦੇ ਸਾਨੂੰ <button class="v" data-tl="aapniaan" data-def="one's own">ਆਪਣੀਆਂ</button> <button class="v" data-tl="dhaarnaavaan" data-def="assumptions · beliefs">ਧਾਰਨਾਵਾਂ</button> ਬਾਰੇ ਦੁਬਾਰਾ ਸੋਚਣ ਲਈ ਪ੍ਰੇਰਿਤ ਕਰ ਸਕਦੇ ਹਨ। ਕਈ ਵਾਰ ਕੋਈ ਫ਼ਿਲਮ ਸਾਨੂੰ ਇੰਨੀ <button class="v" data-tl="doonghaai" data-def="depth">ਡੂੰਘਾਈ</button> ਨਾਲ <button class="v" data-tl="prabhaavit" data-def="to influence · affect">ਪ੍ਰਭਾਵਿਤ</button> ਕਰਦੀ ਹੈ ਕਿ ਉਸ ਵਿੱਚੋਂ ਮਿਲਿਆ ਕੋਈ ਸੰਦੇਸ਼ ਜਾਂ <button class="v" data-tl="kirdaar" data-def="character(s)">ਕਿਰਦਾਰ</button> ਸਾਨੂੰ ਆਪਣੀ <button class="v" data-tl="zindagi" data-def="life">ਜ਼ਿੰਦਗੀ</button> ਵਿੱਚ ਮੁਸ਼ਕਲ ਹਾਲਾਤਾਂ ਦਾ ਸਾਹਮਣਾ ਕਰਨ ਲਈ ਹੌਸਲਾ ਦੇ ਸਕਦਾ ਹੈ।</p>
+          <p>ਮੇਰੇ <button class="v" data-tl="vichaar" data-def="opinion · one's own view">ਵਿਚਾਰ</button> ਵਿੱਚ, ਸਿਨੇਮਾ ਦੀ <button class="v" data-tl="mahattata" data-def="importance">ਮਹੱਤਤਾ</button> <button class="v" data-tl="sirf" data-def="only">ਸਿਰਫ਼</button> <button class="v" data-tl="manoranjan" data-def="entertainment">ਮਨੋਰੰਜਨ</button> ਤੱਕ ਸੀਮਿਤ ਨਹੀਂ ਹੈ, ਕਿਉਂਕਿ ਇੱਕ ਚੰਗੀ ਫ਼ਿਲਮ ਕਿਸੇ ਵਿਅਕਤੀ ਨੂੰ ਨਵੀਂ ਸੋਚ ਦੇ ਸਕਦੀ ਹੈ, ਉਸਨੂੰ ਪ੍ਰੇਰਿਤ ਕਰ ਸਕਦੀ ਹੈ ਅਤੇ ਕਈ ਵਾਰ ਉਸਦੀ <button class="v" data-tl="zindagi" data-def="life">ਜ਼ਿੰਦਗੀ</button> ਨੂੰ ਦੇਖਣ ਦਾ <button class="v" data-tl="nazariaa" data-def="perspective">ਨਜ਼ਰੀਆ</button> ਵੀ ਬਦਲ ਸਕਦੀ ਹੈ। <button class="v" data-tl="haalaanki" data-def="although · however">ਹਾਲਾਂਕਿ</button> ਹਰ ਫ਼ਿਲਮ ਤੋਂ ਕੁਝ ਸਿੱਖਣ ਨੂੰ ਨਹੀਂ ਮਿਲਦਾ, ਪਰ ਜੇ ਅਸੀਂ ਚੰਗੀਆਂ ਅਤੇ <span class="latin">meaningful</span> ਫ਼ਿਲਮਾਂ <button class="v" data-tl="chun" data-def="to choose">ਚੁਣ</button> ਕੇ ਦੇਖੀਏ, ਤਾਂ ਸਿਨੇਮਾ ਸਾਡੀ ਜਾਣਕਾਰੀ, ਸੋਚ ਅਤੇ <button class="v" data-tl="bhaavnaatmak" data-def="emotional">ਭਾਵਨਾਤਮਕ</button> ਸਮਝ ਨੂੰ ਵਧਾਉਣ ਵਿੱਚ ਇੱਕ ਮਹੱਤਵਪੂਰਨ ਭੂਮਿਕਾ ਨਿਭਾ ਸਕਦਾ ਹੈ। ਸਿਨੇਮਾ ਸਾਨੂੰ ਆਪਣੀ <button class="v" data-tl="rozaana" data-def="daily (life)">ਰੋਜ਼ਾਨਾ</button> <button class="v" data-tl="zindagi" data-def="life">ਜ਼ਿੰਦਗੀ</button> ਤੋਂ ਕੁਝ ਸਮੇਂ ਲਈ ਬਾਹਰ ਨਿਕਲ ਕੇ ਇੱਕ ਅਜਿਹੀ ਦੁਨੀਆ ਵਿੱਚ ਲੈ ਜਾਂਦਾ ਹੈ, ਜਿੱਥੇ ਅਸੀਂ <button class="v" data-tl="vakh-vakh" data-def="different · various">ਵੱਖ-ਵੱਖ</button> ਕਹਾਣੀਆਂ, <button class="v" data-tl="kirdaaraan" data-def="characters">ਕਿਰਦਾਰਾਂ</button> ਅਤੇ ਭਾਵਨਾਵਾਂ ਦਾ ਅਨੁਭਵ ਕਰ ਸਕਦੇ ਹਾਂ।</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="reading c2">
+      <div class="reading-head">
+        <span class="badge">Reading 02</span>
+        <h2>Negative People</h2>
+        <span class="gt">ਨਕਾਰਾਤਮਕ ਲੋਕ</span>
+      </div>
+      <div class="card">
+        <div class="passage">
+          <p><button class="v" data-tl="nakaaraatmak soch" data-def="negative thinking">ਨਕਾਰਾਤਮਕ ਸੋਚ</button> ਵਾਲੇ ਲੋਕ ਅਕਸਰ ਆਪਣੇ ਆਲੇ-ਦੁਆਲੇ ਦੇ ਲੋਕਾਂ ਦਾ ਹੌਸਲਾ ਤੋੜਦੇ ਹਨ ਅਤੇ ਉਨ੍ਹਾਂ ਨੂੰ ਆਪਣੇ <button class="v" data-tl="supniaan" data-def="dreams">ਸੁਪਨਿਆਂ</button> ਨੂੰ ਪੂਰਾ ਕਰਨ ਤੋਂ ਡਰਾਉਂਦੇ ਹਨ। ਕੁਝ ਲੋਕ ਤੁਹਾਡੀ <button class="v" data-tl="tarakki" data-def="progress">ਤਰੱਕੀ</button> ਨੂੰ ਦੇਖ ਕੇ ਖੁਸ਼ ਹੋਣ ਦੀ ਬਜਾਏ ਤੁਹਾਡੀਆਂ <button class="v" data-tl="kamiaan" data-def="weaknesses · shortcomings">ਕਮੀਆਂ</button> ਬਾਰੇ ਗੱਲ ਕਰਦੇ ਹਨ ਤਾਂ ਜੋ ਤੁਹਾਡਾ <button class="v" data-tl="vishvaas" data-def="confidence · trust">ਵਿਸ਼ਵਾਸ</button> ਘੱਟ ਹੋ ਜਾਵੇ। ਜਿਹੜੇ ਲੋਕ ਹਰ ਸਮੇਂ ਦੂਜਿਆਂ ਦੀ ਬੁਰਾਈ ਕਰਦੇ ਰਹਿੰਦੇ ਹਨ, ਉਹ ਅਕਸਰ ਆਪਣੀ <button class="v" data-tl="zindagi" data-def="life">ਜ਼ਿੰਦਗੀ</button> ਦੀਆਂ ਚੰਗੀਆਂ ਚੀਜ਼ਾਂ ਨੂੰ ਵੀ <button class="v" data-tl="nazarandaaz" data-def="to ignore · overlook">ਨਜ਼ਰਅੰਦਾਜ਼</button> ਕਰ ਦਿੰਦੇ ਹਨ।</p>
+          <p>ਨਕਾਰਾਤਮਕ ਲੋਕਾਂ ਨਾਲ ਬਹੁਤ ਜ਼ਿਆਦਾ ਸਮਾਂ <button class="v" data-tl="bitaaun" data-def="to spend (time)">ਬਿਤਾਉਣ</button> ਨਾਲ ਸਾਡੀ ਸੋਚ ਵੀ ਹੌਲੀ-ਹੌਲੀ ਨਕਾਰਾਤਮਕ ਹੋ ਸਕਦੀ ਹੈ ਅਤੇ ਅਸੀਂ ਹਰ ਗੱਲ ਵਿੱਚ <button class="v" data-tl="samassiaa" data-def="problem">ਸਮੱਸਿਆ</button> ਦੇਖਣ ਲੱਗ ਪੈਂਦੇ ਹਾਂ। ਕੁਝ ਲੋਕ ਤੁਹਾਡੀ ਮਦਦ ਕਰਨ ਦੀ ਬਜਾਏ ਤੁਹਾਨੂੰ ਇਹ ਦੱਸਦੇ ਰਹਿੰਦੇ ਹਨ ਕਿ ਤੁਸੀਂ ਕੁਝ ਨਹੀਂ ਕਰ ਸਕਦੇ ਅਤੇ ਇਸ ਤਰ੍ਹਾਂ ਤੁਹਾਡਾ <button class="v" data-tl="aatam-vishvaas" data-def="self-confidence">ਆਤਮ-ਵਿਸ਼ਵਾਸ</button> ਕਮਜ਼ੋਰ ਕਰਦੇ ਹਨ। <button class="v" data-tl="zindagi" data-def="life">ਜ਼ਿੰਦਗੀ</button> ਵਿੱਚ ਸਾਨੂੰ ਅਜਿਹੇ ਲੋਕਾਂ ਤੋਂ ਬਚਣਾ ਚਾਹੀਦਾ ਹੈ ਜੋ ਸਾਡੀ ਗੈਰਹਾਜ਼ਰੀ ਵਿੱਚ ਸਾਡੇ ਬਾਰੇ ਬੁਰਾ ਬੋਲਦੇ ਹਨ ਅਤੇ ਸਾਡੇ ਸਾਹਮਣੇ ਝੂਠੀ <button class="v" data-tl="taareef" data-def="praise">ਤਾਰੀਫ਼</button> ਕਰਦੇ ਹਨ। ਜਿਹੜੇ ਲੋਕ ਹਮੇਸ਼ਾ ਦੂਜਿਆਂ ਨਾਲ ਆਪਣੀ ਤੁਲਨਾ ਕਰਦੇ ਹਨ, ਉਹ ਆਪਣੀ <button class="v" data-tl="zindagi" data-def="life">ਜ਼ਿੰਦਗੀ</button> ਦੀਆਂ ਖੁਸ਼ੀਆਂ ਨੂੰ ਭੁੱਲ ਕੇ ਆਪਣੇ ਮਨ ਵਿੱਚ <button class="v" data-tl="bechaini" data-def="restlessness · anxiety">ਬੇਚੈਨੀ</button> ਅਤੇ ਨਿਰਾਸ਼ਾ ਪੈਦਾ ਕਰ ਲੈਂਦੇ ਹਨ।</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="reading c3">
+      <div class="reading-head">
+        <span class="badge">Reading 03</span>
+        <h2>How the Modern Generation Speaks</h2>
+        <span class="gt">ਆਧੁਨਿਕ ਪੀੜ੍ਹੀ ਦੀ ਭਾਸ਼ਾ</span>
+      </div>
+      <div class="card">
+        <div class="passage">
+          <p>ਅੱਜ ਦੀ <button class="v" data-tl="aadhunik" data-def="modern">ਆਧੁਨਿਕ</button> <button class="v" data-tl="peerhee" data-def="generation">ਪੀੜ੍ਹੀ</button> ਦੀ <button class="v" data-tl="gallbaat" data-def="conversation · talk">ਗੱਲਬਾਤ</button> ਕਰਨ ਦੀ <button class="v" data-tl="shaili" data-def="style (of speaking)">ਸ਼ੈਲੀ</button> ਪੁਰਾਣੀ ਪੀੜ੍ਹੀ ਨਾਲੋਂ ਕਾਫ਼ੀ <button class="v" data-tl="vakhree" data-def="different · distinct">ਵੱਖਰੀ</button> ਹੈ, ਕਿਉਂਕਿ ਉਹ <button class="v" data-tl="rozaana jeevan" data-def="daily life">ਰੋਜ਼ਾਨਾ ਜੀਵਨ</button> ਵਿੱਚ ਪੰਜਾਬੀ ਦੇ ਨਾਲ-ਨਾਲ ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਹੋਰ <button class="v" data-tl="bhaashaavaan" data-def="languages">ਭਾਸ਼ਾਵਾਂ</button> ਦੇ <button class="v" data-tl="shabdaan" data-def="words">ਸ਼ਬਦਾਂ</button> ਦੀ <button class="v" data-tl="vartoN" data-def="use · usage">ਵਰਤੋਂ</button> ਵੀ ਕਰਦੀ ਹੈ। ਮੋਬਾਈਲ ਫ਼ੋਨ, ਸੋਸ਼ਲ ਮੀਡੀਆ ਅਤੇ ਇੰਟਰਨੈੱਟ ਦੇ <button class="v" data-tl="vadhde" data-def="growing · increasing">ਵਧਦੇ</button> <button class="v" data-tl="prabhaav" data-def="impact · influence">ਪ੍ਰਭਾਵ</button> <button class="v" data-tl="kaaran" data-def="because of · due to">ਕਾਰਨ</button> <button class="v" data-tl="naujawaanaan" data-def="youth · young people">ਨੌਜਵਾਨਾਂ</button> ਨੇ ਗੱਲਬਾਤ ਲਈ ਕਈ ਨਵੇਂ ਸ਼ਬਦ, <button class="v" data-tl="chhote vaak" data-def="short sentences">ਛੋਟੇ ਵਾਕ</button> ਅਤੇ ਸਲੈਂਗ ਸ਼ਬਦ <button class="v" data-tl="apnaae" data-def="adopted · took up">ਅਪਣਾਏ</button> ਹਨ। ਅੱਜਕੱਲ੍ਹ ਨੌਜਵਾਨ ਦੋਸਤਾਂ ਨਾਲ ਗੱਲ ਕਰਦੇ ਸਮੇਂ <button class="v" data-tl="ravaaitee" data-def="traditional">ਰਵਾਇਤੀ</button> ਪੰਜਾਬੀ ਦੀ <button class="v" data-tl="bajaae" data-def="instead of">ਬਜਾਏ</button> ਪੰਜਾਬੀ ਅਤੇ ਅੰਗਰੇਜ਼ੀ ਨੂੰ ਮਿਲਾ ਕੇ ਬੋਲਣਾ ਜ਼ਿਆਦਾ <button class="v" data-tl="pasand" data-def="to like · prefer">ਪਸੰਦ</button> ਕਰਦੇ ਹਨ। ਕਈ ਵਾਰ ਇੱਕੋ <button class="v" data-tl="vaak" data-def="sentence">ਵਾਕ</button> ਵਿੱਚ ਪੰਜਾਬੀ, ਅੰਗਰੇਜ਼ੀ ਅਤੇ ਹਿੰਦੀ ਦੇ ਸ਼ਬਦਾਂ ਦੀ ਵਰਤੋਂ ਕੀਤੀ ਜਾਂਦੀ ਹੈ, ਜਿਸ ਨਾਲ ਆਧੁਨਿਕ ਪੀੜ੍ਹੀ ਦੀ ਭਾਸ਼ਾ ਇੱਕ <button class="v" data-tl="milee-julee" data-def="mixed · blended">ਮਿਲੀ-ਜੁਲੀ</button> ਭਾਸ਼ਾ <button class="v" data-tl="vargee" data-def="like · resembling">ਵਰਗੀ</button> ਲੱਗਦੀ ਹੈ।</p>
+          <p><button class="v" data-tl="udaaharan" data-def="example">ਉਦਾਹਰਨ</button> ਵਜੋਂ, ਨੌਜਵਾਨ ਆਮ ਗੱਲਬਾਤ ਵਿੱਚ “ਅੱਜ ਮੇਰਾ ਬਹੁਤ ਬਿਜ਼ੀ ਸ਼ੈਡਿਊਲ ਹੈ”, “ਇਹ ਕੰਮ ਅੱਜ ਹੀ ਫਿਨਿਸ਼ ਕਰਨਾ ਹੈ” ਜਾਂ “ਤੂੰ ਮੈਨੂੰ ਬਾਅਦ ਵਿੱਚ ਅਪਡੇਟ ਕਰੀਂ” ਵਰਗੇ ਵਾਕ <button class="v" data-tl="aasaanee" data-def="ease · easily">ਆਸਾਨੀ</button> ਨਾਲ ਵਰਤ ਲੈਂਦੇ ਹਨ। ਸੋਸ਼ਲ ਮੀਡੀਆ ਨੇ ਨੌਜਵਾਨਾਂ ਦੀ ਭਾਸ਼ਾ ਨੂੰ ਹੋਰ ਵੀ <button class="v" data-tl="tezee" data-def="speed · rapidly">ਤੇਜ਼ੀ</button> ਨਾਲ ਬਦਲਿਆ ਹੈ, ਕਿਉਂਕਿ ਇੰਸਟਾਗ੍ਰਾਮ, ਯੂਟਿਊਬ, ਸਨੈਪਚੈਟ ਅਤੇ ਹੋਰ ਪਲੇਟਫਾਰਮਾਂ <button class="v" data-tl="raaheeN" data-def="through · via">ਰਾਹੀਂ</button> ਨਵੇਂ ਸ਼ਬਦ ਅਤੇ <button class="v" data-tl="vaak-ansh" data-def="phrase (ਅੰਸ਼ = part)">ਵਾਕ-ਅੰਸ਼</button> ਬਹੁਤ ਜਲਦੀ <button class="v" data-tl="lokpriya" data-def="popular">ਲੋਕਪ੍ਰਿਯ</button> ਹੋ ਜਾਂਦੇ ਹਨ। ਨੌਜਵਾਨ ਆਨਲਾਈਨ ਗੱਲਬਾਤ ਦੌਰਾਨ ਲੰਬੇ ਵਾਕ ਲਿਖਣ ਦੀ <button class="v" data-tl="bajaae" data-def="instead of">ਬਜਾਏ</button> ਛੋਟੇ ਸ਼ਬਦ, ਸ਼ਾਰਟ ਫਾਰਮ, ਇਮੋਜੀ ਅਤੇ ਕਈ ਵਾਰ <button class="v" data-tl="sirf" data-def="only">ਸਿਰਫ਼</button> ਇੱਕ ਜਾਂ ਦੋ ਸ਼ਬਦਾਂ ਦੀ ਵਰਤੋਂ ਕਰਦੇ ਹਨ।</p>
+          <p>ਅੱਜ ਦੀ ਪੀੜ੍ਹੀ ਵਿੱਚ ਪੰਜਾਬੀ ਨੂੰ ਗੁਰਮੁਖੀ <button class="v" data-tl="lipee" data-def="script">ਲਿਪੀ</button> ਦੀ ਬਜਾਏ ਰੋਮਨ ਲਿਪੀ ਵਿੱਚ ਲਿਖਣ ਦਾ <button class="v" data-tl="rujhaan" data-def="trend · tendency">ਰੁਝਾਨ</button> ਵੀ ਵਧਿਆ ਹੈ, <button class="v" data-tl="khaas karke" data-def="especially">ਖ਼ਾਸ ਕਰਕੇ</button> ਮੋਬਾਈਲ ਮੈਸੇਜਿੰਗ ਅਤੇ ਸੋਸ਼ਲ ਮੀਡੀਆ ਉੱਤੇ। ਉਦਾਹਰਨ ਲਈ, ਕੋਈ ਨੌਜਵਾਨ “ਤੂੰ ਕਿੱਥੇ ਜਾ ਰਿਹਾ ਹੈਂ?” ਲਿਖਣ ਦੀ ਬਜਾਏ <span class="latin">“tu kithe ja reha ae?”</span> ਲਿਖ ਸਕਦਾ ਹੈ, ਕਿਉਂਕਿ ਉਸ ਲਈ ਰੋਮਨ ਪੰਜਾਬੀ ਵਿੱਚ ਟਾਈਪ ਕਰਨਾ ਕਈ ਵਾਰ <button class="v" data-tl="vadhere" data-def="more · greater">ਵਧੇਰੇ</button> <button class="v" data-tl="aasaan" data-def="easy (adjective)">ਆਸਾਨ</button> ਹੁੰਦਾ ਹੈ। ਆਧੁਨਿਕ ਪੀੜ੍ਹੀ ਦੀ ਭਾਸ਼ਾ ਵਿੱਚ ਸਿਰਫ਼ ਨਵੇਂ ਸ਼ਬਦ ਹੀ ਨਹੀਂ ਆਏ, <button class="v" data-tl="sagoN" data-def="rather · instead">ਸਗੋਂ</button> ਪੁਰਾਣੇ ਸ਼ਬਦਾਂ ਦੇ <button class="v" data-tl="arth" data-def="meaning">ਅਰਥ</button> ਅਤੇ ਵਰਤੋਂ ਦੇ <button class="v" data-tl="dhang" data-def="manner · way">ਢੰਗ</button> ਵਿੱਚ ਵੀ ਕਈ ਤਰ੍ਹਾਂ ਦੇ <button class="v" data-tl="badlaa" data-def="change">ਬਦਲਾਅ</button> ਦੇਖਣ ਨੂੰ ਮਿਲਦੇ ਹਨ।</p>
+          <p>ਨੌਜਵਾਨਾਂ ਦੀ ਗੱਲਬਾਤ ਆਮ ਤੌਰ ’ਤੇ ਵਧੇਰੇ <button class="v" data-tl="gair-rasmee" data-def="informal">ਗੈਰ-ਰਸਮੀ</button> ਹੁੰਦੀ ਹੈ, ਇਸ ਲਈ ਉਹ <button class="v" data-tl="vaddiaan" data-def="elders · older people">ਵੱਡਿਆਂ</button> ਜਾਂ <button class="v" data-tl="adhiaapkaan" data-def="teachers">ਅਧਿਆਪਕਾਂ</button> ਨਾਲ ਗੱਲ ਕਰਨ ਵਾਲੀ ਭਾਸ਼ਾ ਅਤੇ ਦੋਸਤਾਂ ਨਾਲ ਗੱਲ ਕਰਨ ਵਾਲੀ ਭਾਸ਼ਾ ਵਿੱਚ <button class="v" data-tl="spasht" data-def="clear">ਸਪਸ਼ਟ</button> <button class="v" data-tl="farak" data-def="difference">ਫ਼ਰਕ</button> ਰੱਖਦੇ ਹਨ। ਦੋਸਤਾਂ ਦੇ <button class="v" data-tl="samooh" data-def="group">ਸਮੂਹ</button> ਵਿੱਚ ਨੌਜਵਾਨ ਅਜਿਹੇ ਸ਼ਬਦ ਅਤੇ ਵਾਕ-ਅੰਸ਼ ਵਰਤਦੇ ਹਨ ਜੋ ਸ਼ਾਇਦ ਰਸਮੀ ਪੰਜਾਬੀ ਵਿੱਚ ਸਹੀ ਜਾਂ <button class="v" data-tl="uchit" data-def="appropriate · proper">ਉਚਿਤ</button> ਨਾ <button class="v" data-tl="manne" data-def="considered · regarded">ਮੰਨੇ</button> ਜਾਣ, ਪਰ ਉਨ੍ਹਾਂ ਦੀ ਰੋਜ਼ਾਨਾ ਗੱਲਬਾਤ ਵਿੱਚ ਬਿਲਕੁਲ <button class="v" data-tl="aam" data-def="common · ordinary">ਆਮ</button> ਹੁੰਦੇ ਹਨ। ਇਸ ਤਰ੍ਹਾਂ ਦੀ ਭਾਸ਼ਾ ਨੂੰ <button class="v" data-tl="aksar" data-def="often">ਅਕਸਰ</button> ਨੌਜਵਾਨਾਂ ਦੀ ਸਲੈਂਗ ਕਿਹਾ ਜਾਂਦਾ ਹੈ, ਅਤੇ ਇਹ ਸਲੈਂਗ ਸਮੇਂ, ਸੋਸ਼ਲ ਮੀਡੀਆ ਦੇ <button class="v" data-tl="rujhaanaan" data-def="trends">ਰੁਝਾਨਾਂ</button> ਅਤੇ ਨੌਜਵਾਨਾਂ ਦੇ ਆਪਸੀ <button class="v" data-tl="sampark" data-def="contact">ਸੰਪਰਕ</button> ਦੇ <button class="v" data-tl="anusaar" data-def="according to">ਅਨੁਸਾਰ</button> <button class="v" data-tl="lagaataar" data-def="continuously · constantly">ਲਗਾਤਾਰ</button> ਬਦਲਦੀ ਰਹਿੰਦੀ ਹੈ।</p>
+          <p>ਆਧੁਨਿਕ ਪੀੜ੍ਹੀ ਦੀ ਭਾਸ਼ਾ ਵਿੱਚ ਤਕਨਾਲੋਜੀ ਨਾਲ ਜੁੜੇ ਸ਼ਬਦਾਂ ਦੀ ਵਰਤੋਂ ਵੀ ਬਹੁਤ ਵਧ ਗਈ ਹੈ, ਕਿਉਂਕਿ ਨੌਜਵਾਨਾਂ ਦੀ <button class="v" data-tl="parhaaee" data-def="studies · education">ਪੜ੍ਹਾਈ</button>, ਕੰਮ, ਮਨੋਰੰਜਨ ਅਤੇ ਸਮਾਜਿਕ ਜੀਵਨ ਦਾ ਵੱਡਾ <button class="v" data-tl="hissaa" data-def="part · portion">ਹਿੱਸਾ</button> ਡਿਜ਼ੀਟਲ ਦੁਨੀਆ ਨਾਲ ਜੁੜਿਆ ਹੋਇਆ ਹੈ। ਭਾਸ਼ਾ ਵਿੱਚ ਆ ਰਹੇ ਇਹ ਬਦਲਾਅ ਇਸ ਗੱਲ ਨੂੰ <button class="v" data-tl="darsaaunde" data-def="indicate · show">ਦਰਸਾਉਂਦੇ</button> ਹਨ ਕਿ ਭਾਸ਼ਾ ਇੱਕ <button class="v" data-tl="jeevant" data-def="living · vibrant">ਜੀਵੰਤ</button> ਚੀਜ਼ ਹੈ ਜੋ ਸਮਾਜ, ਤਕਨਾਲੋਜੀ, ਸੱਭਿਆਚਾਰ ਅਤੇ ਨਵੀਂ ਪੀੜ੍ਹੀ ਦੀ <button class="v" data-tl="jeevan-shailee" data-def="lifestyle">ਜੀਵਨ-ਸ਼ੈਲੀ</button> ਦੇ ਨਾਲ-ਨਾਲ ਬਦਲਦੀ ਰਹਿੰਦੀ ਹੈ।</p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ==================== INDEX CARDS ==================== -->
+  <div id="view-cards" hidden>
+    <section class="hero">
+      <p class="eyebrow">ਪੰਜਾਬੀ <span class="dot">·</span> Vocabulary drill</p>
+      <h1>Flip. Recall. Repeat.</h1>
+      <p class="sub">Every word from the readings on a card. Tap a card to flip it, shuffle the deck, or switch to English-first to practice the harder direction.</p>
+    </section>
+
+    <div class="filters" id="filters"></div>
+
+    <div class="deck">
+      <div class="opts">
+        <label><input type="checkbox" id="reverse" onchange="renderCard()"> English first</label>
+      </div>
+      <div class="flashcard" id="flashcard" onclick="flip()" role="button" tabindex="0" aria-label="Flashcard, activate to flip">
+        <div class="fc-inner">
+          <div class="fc-face fc-front" id="fc-front">
+            <span class="tag" id="front-tag">Gurmukhi</span>
+            <span class="grp" id="front-grp"></span>
+            <div class="word" id="fc-word"></div>
+            <div class="hint">tap to reveal</div>
+          </div>
+          <div class="fc-face fc-back">
+            <span class="tag">Meaning</span>
+            <div class="en" id="fc-en"></div>
+            <div class="tl" id="fc-tl"></div>
+            <div class="gw" id="fc-gw"></div>
+          </div>
+        </div>
+      </div>
+      <div class="controls">
+        <button class="btn" onclick="prev()">‹ Prev</button>
+        <span class="progress" id="progress"></span>
+        <button class="btn primary" onclick="next()">Next ›</button>
+      </div>
+      <div class="controls">
+        <button class="btn" onclick="shuffle()">⤮ Shuffle</button>
+        <button class="btn" onclick="resetOrder()">↺ Reset</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer id="foot"></footer>
+
+<div class="pop" id="pop" role="dialog" aria-live="polite">
+  <div class="lbl">ਸ਼ਬਦ · word</div>
+  <div class="pw" id="pop-word"></div>
+  <div class="ptl" id="pop-tl"></div>
+  <div class="pdef" id="pop-def"></div>
+</div>
+
+<script>
+/* ---------------- vocab deck ---------------- */
+const GROUPS = [
+  { key: "all",    label: "All" },
+  { key: "cinema", label: "Cinema" },
+  { key: "neg",    label: "Negative People" },
+  { key: "modern", label: "Modern Generation" },
+  { key: "id",     label: "Identity & Culture" }
+];
+const WORDS = [
+  ["ਰੋਜ਼ਾਨਾ","rozaana","daily (life)","cinema"],
+  ["ਤਣਾਅ","tanaa","stress · tension","cinema"],
+  ["ਚਿੰਤਾਵਾਂ","chintaavaan","worries","cinema"],
+  ["ਵੱਖ-ਵੱਖ","vakh-vakh","different · various","cinema"],
+  ["ਤਜਰਬਿਆਂ","tajarbiaan","experiences","cinema"],
+  ["ਮੁਸ਼ਕਲਾਂ","mushkalaan","struggles · difficulties","cinema"],
+  ["ਸਮਰੱਥਾ","samrattha","capability","cinema"],
+  ["ਨਜ਼ਰੀਏ","nazarie","perspective","cinema"],
+  ["ਪ੍ਰਭਾਵਿਤ","prabhaavit","to influence · affect","cinema"],
+  ["ਕਿਰਦਾਰ","kirdaar","character(s)","cinema"],
+  ["ਡੂੰਘਾਈ","doonghaai","depth","cinema"],
+  ["ਵਿਚਾਰ","vichaar","opinion · one's own view","cinema"],
+  ["ਮਹੱਤਤਾ","mahattata","importance","cinema"],
+  ["ਸਿਰਫ਼","sirf","only","cinema"],
+  ["ਮਨੋਰੰਜਨ","manoranjan","entertainment","cinema"],
+  ["ਹਾਲਾਂਕਿ","haalaanki","although · however","cinema"],
+  ["ਚੁਣ","chun","to choose","cinema"],
+
+  ["ਨਕਾਰਾਤਮਕ ਸੋਚ","nakaaraatmak soch","negative thinking","neg"],
+  ["ਸੁਪਨਿਆਂ","supniaan","dreams","neg"],
+  ["ਤਰੱਕੀ","tarakki","progress","neg"],
+  ["ਕਮੀਆਂ","kamiaan","weaknesses · shortcomings","neg"],
+  ["ਵਿਸ਼ਵਾਸ","vishvaas","confidence · trust","neg"],
+  ["ਨਜ਼ਰਅੰਦਾਜ਼","nazarandaaz","to ignore · overlook","neg"],
+  ["ਬਿਤਾਉਣ","bitaaun","to spend (time)","neg"],
+  ["ਆਤਮ-ਵਿਸ਼ਵਾਸ","aatam-vishvaas","self-confidence","neg"],
+  ["ਤਾਰੀਫ਼","taareef","praise","neg"],
+  ["ਬੇਚੈਨੀ","bechaini","restlessness · anxiety","neg"],
+
+  ["ਆਧੁਨਿਕ","aadhunik","modern","modern"],
+  ["ਪੀੜ੍ਹੀ","peerhee","generation","modern"],
+  ["ਗੱਲਬਾਤ","gallbaat","conversation · talk","modern"],
+  ["ਸ਼ੈਲੀ","shaili","style (of speaking)","modern"],
+  ["ਵੱਖਰੀ","vakhree","different · distinct","modern"],
+  ["ਰੋਜ਼ਾਨਾ ਜੀਵਨ","rozaana jeevan","daily life","modern"],
+  ["ਭਾਸ਼ਾਵਾਂ","bhaashaavaan","languages","modern"],
+  ["ਸ਼ਬਦਾਂ","shabdaan","words","modern"],
+  ["ਵਰਤੋਂ","vartoN","use · usage","modern"],
+  ["ਵਧਦੇ","vadhde","growing · increasing","modern"],
+  ["ਪ੍ਰਭਾਵ","prabhaav","impact · influence","modern"],
+  ["ਕਾਰਨ","kaaran","because of · due to","modern"],
+  ["ਨੌਜਵਾਨਾਂ","naujawaanaan","youth · young people","modern"],
+  ["ਛੋਟੇ ਵਾਕ","chhote vaak","short sentences","modern"],
+  ["ਅਪਣਾਏ","apnaae","adopted · took up","modern"],
+  ["ਰਵਾਇਤੀ","ravaaitee","traditional","modern"],
+  ["ਬਜਾਏ","bajaae","instead of","modern"],
+  ["ਪਸੰਦ","pasand","to like · prefer","modern"],
+  ["ਵਾਕ","vaak","sentence","modern"],
+  ["ਮਿਲੀ-ਜੁਲੀ","milee-julee","mixed · blended","modern"],
+  ["ਵਰਗੀ","vargee","like · resembling","modern"],
+  ["ਉਦਾਹਰਨ","udaaharan","example","modern"],
+  ["ਆਸਾਨੀ","aasaanee","ease · easily","modern"],
+  ["ਤੇਜ਼ੀ","tezee","speed · rapidly","modern"],
+  ["ਰਾਹੀਂ","raaheeN","through · via","modern"],
+  ["ਵਾਕ-ਅੰਸ਼","vaak-ansh","phrase (ਅੰਸ਼ = part)","modern"],
+  ["ਲੋਕਪ੍ਰਿਯ","lokpriya","popular","modern"],
+  ["ਲਿਪੀ","lipee","script","modern"],
+  ["ਰੁਝਾਨ","rujhaan","trend · tendency","modern"],
+  ["ਖ਼ਾਸ ਕਰਕੇ","khaas karke","especially","modern"],
+  ["ਵਧੇਰੇ","vadhere","more · greater","modern"],
+  ["ਆਸਾਨ","aasaan","easy","modern"],
+  ["ਸਗੋਂ","sagoN","rather · instead","modern"],
+  ["ਅਰਥ","arth","meaning","modern"],
+  ["ਢੰਗ","dhang","manner · way","modern"],
+  ["ਬਦਲਾਅ","badlaa","change","modern"],
+  ["ਗੈਰ-ਰਸਮੀ","gair-rasmee","informal","modern"],
+  ["ਵੱਡਿਆਂ","vaddiaan","elders · older people","modern"],
+  ["ਅਧਿਆਪਕਾਂ","adhiaapkaan","teachers","modern"],
+  ["ਸਪਸ਼ਟ","spasht","clear","modern"],
+  ["ਫ਼ਰਕ","farak","difference","modern"],
+  ["ਸਮੂਹ","samooh","group","modern"],
+  ["ਉਚਿਤ","uchit","appropriate · proper","modern"],
+  ["ਮੰਨੇ","manne","considered · regarded","modern"],
+  ["ਆਮ","aam","common · ordinary","modern"],
+  ["ਅਕਸਰ","aksar","often","modern"],
+  ["ਰੁਝਾਨਾਂ","rujhaanaan","trends","modern"],
+  ["ਸੰਪਰਕ","sampark","contact","modern"],
+  ["ਅਨੁਸਾਰ","anusaar","according to","modern"],
+  ["ਲਗਾਤਾਰ","lagaataar","continuously","modern"],
+  ["ਪੜ੍ਹਾਈ","parhaaee","studies · education","modern"],
+  ["ਹਿੱਸਾ","hissaa","part · portion","modern"],
+  ["ਦਰਸਾਉਂਦੇ","darsaaunde","indicate · show","modern"],
+  ["ਜੀਵੰਤ","jeevant","living · vibrant","modern"],
+  ["ਜੀਵਨ-ਸ਼ੈਲੀ","jeevan-shailee","lifestyle","modern"],
+
+  ["ਪਹਿਚਾਣ","pehchaan","identity","id"],
+  ["ਪੁਰਖਿਆਂ","purkhiaan","ancestors","id"],
+  ["ਬਰਾਬਰ","baraabar","equal to","id"],
+  ["ਝਲਕ","jhalak","glimpse","id"],
+  ["ਸੱਭਿਆਚਾਰ","sabhiaachaar","culture","id"],
+  ["ਸਮਝਦੇ","samajhde","understand","id"],
+  ["ਮਜ਼ਬੂਤ","mazboot","strong","id"],
+  ["ਇਤਿਹਾਸ","itihaas","history","id"],
+  ["ਸਜਾਵਟ","sajaavat","decoration","id"],
+  ["ਸਜਾਵਟੀ","sajaavati","decorative","id"],
+  ["ਸਜਾਉਂਦੇ","sajaunde","decorate","id"]
+].map(w => ({ g: w[0], tl: w[1], en: w[2], grp: w[3] }));
+
+const GRP_LABEL = { cinema:"Cinema", neg:"Negative People", modern:"Modern Gen", id:"Identity" };
+const CARD_COLORS = [
+  ["--pink","#ffffff"], ["--teal","#ffffff"], ["--lavender","#0a0a0a"],
+  ["--peach","#0a0a0a"], ["--ochre","#0a0a0a"], ["--coral","#ffffff"], ["--mint","#0a0a0a"]
+];
+
+/* ---------------- tabs ---------------- */
+function showTab(which) {
+  const read = which === 'read';
+  document.getElementById('view-read').hidden = !read;
+  document.getElementById('view-cards').hidden = read;
+  document.getElementById('tab-read').setAttribute('aria-selected', read);
+  document.getElementById('tab-cards').setAttribute('aria-selected', !read);
+  closePop();
+  if (!read && !deckReady) { buildFilters(); applyFilter('all'); deckReady = true; }
+  window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+
+/* ---------------- readings popover ---------------- */
+const pop = document.getElementById('pop');
+const pWord = document.getElementById('pop-word');
+const pTl = document.getElementById('pop-tl');
+const pDef = document.getElementById('pop-def');
+let activeBtn = null;
+
+function closePop() {
+  pop.classList.remove('show');
+  if (activeBtn) activeBtn.classList.remove('active');
+  activeBtn = null;
+}
+function openPop(btn) {
+  if (activeBtn === btn) { closePop(); return; }
+  if (activeBtn) activeBtn.classList.remove('active');
+  activeBtn = btn; btn.classList.add('active');
+  pWord.textContent = btn.textContent;
+  pTl.textContent = btn.dataset.tl;
+  pDef.textContent = btn.dataset.def;
+  pop.classList.add('show');
+  const r = btn.getBoundingClientRect();
+  const pr = pop.getBoundingClientRect();
+  const pad = 10;
+  let left = r.left + r.width / 2 - pr.width / 2;
+  left = Math.max(pad, Math.min(left, window.innerWidth - pr.width - pad));
+  let top = r.bottom + 10;
+  if (top + pr.height > window.innerHeight - pad) top = r.top - pr.height - 10;
+  if (top < pad) top = pad;
+  pop.style.left = left + 'px';
+  pop.style.top = top + 'px';
+}
+document.querySelectorAll('.v').forEach(btn =>
+  btn.addEventListener('click', e => { e.stopPropagation(); openPop(btn); }));
+document.addEventListener('click', e => { if (!pop.contains(e.target)) closePop(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closePop(); });
+window.addEventListener('resize', closePop);
+window.addEventListener('scroll', closePop, true);
+
+/* ---------------- flashcards ---------------- */
+let deckReady = false;
+let filter = 'all';
+let deck = [];
+let order = [];
+let pos = 0;
+let flipped = false;
+
+function buildFilters() {
+  const el = document.getElementById('filters');
+  el.innerHTML = GROUPS.map(g =>
+    `<button class="chip" data-k="${g.key}" aria-pressed="${g.key==='all'}" onclick="applyFilter('${g.key}')">${g.label}</button>`
+  ).join('');
+}
+function applyFilter(k) {
+  filter = k;
+  document.querySelectorAll('.chip').forEach(c => c.setAttribute('aria-pressed', c.dataset.k === k));
+  deck = (k === 'all') ? WORDS.slice() : WORDS.filter(w => w.grp === k);
+  order = deck.map((_, i) => i);
+  pos = 0;
+  renderCard();
+}
+function renderCard() {
+  if (!deck.length) return;
+  const item = deck[order[pos]];
+  const reverse = document.getElementById('reverse').checked;
+  const front = document.getElementById('fc-word');
+  const [colVar, txt] = CARD_COLORS[pos % CARD_COLORS.length];
+  const frontFace = document.getElementById('fc-front');
+  frontFace.style.background = `var(${colVar})`;
+  frontFace.style.color = txt;
+
+  document.getElementById('front-tag').textContent = reverse ? 'English' : 'Gurmukhi';
+  document.getElementById('front-grp').textContent = GRP_LABEL[item.grp] || '';
+  if (reverse) {
+    front.textContent = item.en;
+    front.style.fontFamily = 'var(--sans)';
+    front.style.fontSize = 'clamp(28px, 6vw, 44px)';
+    front.style.letterSpacing = '-1px';
+  } else {
+    front.textContent = item.g;
+    front.style.fontFamily = 'var(--guru)';
+    front.style.fontSize = 'clamp(46px, 11vw, 72px)';
+    front.style.letterSpacing = '0';
+  }
+  document.getElementById('fc-en').textContent = reverse ? item.g : item.en;
+  document.getElementById('fc-en').style.fontFamily = reverse ? 'var(--guru)' : 'var(--sans)';
+  document.getElementById('fc-tl').textContent = item.tl;
+  const gw = document.getElementById('fc-gw');
+  gw.textContent = reverse ? '' : item.g;
+  gw.style.display = reverse ? 'none' : 'block';
+  document.getElementById('progress').textContent = (pos + 1) + ' / ' + order.length;
+  flipped = false;
+  document.getElementById('flashcard').classList.remove('flipped');
+}
+function flip() { flipped = !flipped; document.getElementById('flashcard').classList.toggle('flipped', flipped); }
+function next() { pos = (pos + 1) % order.length; renderCard(); }
+function prev() { pos = (pos - 1 + order.length) % order.length; renderCard(); }
+function shuffle() {
+  for (let i = order.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [order[i], order[j]] = [order[j], order[i]]; }
+  pos = 0; renderCard();
+}
+function resetOrder() { order = deck.map((_, i) => i); pos = 0; renderCard(); }
+
+document.getElementById('flashcard').addEventListener('keydown', e => {
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+});
+document.addEventListener('keydown', e => {
+  if (document.getElementById('view-cards').hidden) return;
+  if (e.key === 'ArrowRight') next();
+  else if (e.key === 'ArrowLeft') prev();
+});
+
+document.getElementById('foot').textContent = 'ਪੰਜਾਬੀ Reader · ' + WORDS.length + ' words across 3 readings · transliterations are approximate pronunciation aids';
+</script>
