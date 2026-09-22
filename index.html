@@ -249,6 +249,16 @@
     .fc-inner, .pop, .v, .tab, .chip { transition: none; }
   }
 
+  /* ===================== Readings: paste box ===================== */
+  #view-read .rp-box{ background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg); padding:24px; margin:34px 0 6px; }
+  #view-read .rp-h{ font-family:var(--sans); font-weight:600; font-size:20px; letter-spacing:-.01em; margin:0 0 4px; color:var(--ink); }
+  #view-read .rp-p{ color:var(--muted); font-size:14px; margin:0 0 14px; }
+  #view-read .rp-title{ width:100%; padding:11px 14px; border:1px solid var(--hairline); border-radius:var(--r-md); background:var(--canvas); font-family:var(--sans); color:var(--ink); margin-bottom:10px; }
+  #view-read .rp-src{ width:100%; min-height:8rem; padding:14px; border:1px solid var(--hairline); border-radius:var(--r-md); background:var(--canvas); font:400 1.15rem/1.9 var(--guru); color:var(--ink); resize:vertical; }
+  #view-read .rp-row{ margin-top:12px; }
+  #view-read .rp-btn{ appearance:none; -webkit-appearance:none; border:1.5px solid var(--primary); background:var(--primary); color:var(--on-primary); padding:11px 20px; border-radius:var(--r-md); font-family:var(--sans); font-weight:600; font-size:14px; cursor:pointer; }
+  #view-read .rp-btn:hover{ background:#1f1f1f; }
+
   /* ===================== Word Bank tab ===================== */
   #view-wordbank{
     --paper:var(--canvas); --sheet:var(--surface-soft); --line:var(--hairline);
@@ -327,7 +337,7 @@
     <div class="tabs" role="tablist" aria-label="Views">
       <button class="tab" id="tab-read" role="tab" aria-selected="true" onclick="showTab('read')">Readings</button>
       <button class="tab" id="tab-cards" role="tab" aria-selected="false" onclick="showTab('cards')">Index Cards</button>
-      <button class="tab" id="tab-wordbank" role="tab" aria-selected="false" onclick="showTab('wordbank')">Word Bank</button>
+      <button class="tab" id="tab-wordbank" role="tab" aria-selected="false" onclick="showTab('wordbank')">Define your reading</button>
     </div>
   </div>
 </div>
@@ -339,6 +349,14 @@
       <h1><span class="gword">ਪੰਜਾਬੀ</span> <span class="dot">·</span> Reading practice</h1>
       <p class="sub">Every highlighted word is one to learn: tap it to see its pronunciation and meaning.</p>
       <span class="tip"><span class="sw"></span> highlighted = tap to define</span>
+    </section>
+
+    <section class="rp-box">
+      <h2 class="rp-h">Have your own reading?</h2>
+      <p class="rp-p">Paste any Punjabi text and define the words you don't know.</p>
+      <input type="text" id="rp-title" class="rp-title" placeholder="Title (optional)">
+      <textarea id="rp-src" class="rp-src" lang="pa" placeholder="ਇੱਥੇ ਪਾਠ ਪੇਸਟ ਕਰੋ"></textarea>
+      <div class="rp-row"><button class="rp-btn" onclick="defineReading()">Define this reading</button></div>
     </section>
 
     <section class="reading c1">
@@ -430,7 +448,7 @@
   <!-- ==================== WORD BANK ==================== -->
   <div id="view-wordbank" hidden>
     <section class="hero">
-      <h1><span class="gword">ਸ਼ਬਦ</span> <span class="dot">·</span> Word bank builder</h1>
+      <h1><span class="gword">ਸ਼ਬਦ</span> <span class="dot">·</span> Define your reading</h1>
       <p class="sub">Paste any Punjabi reading, then tap the words you don't know. Each is looked up in a Wiktionary dictionary, including changed forms like plurals and verb endings, and collected into a bank you can copy out.</p>
     </section>
 
@@ -632,6 +650,16 @@ function showTab(which) {
   closePop();
   if (which === 'cards' && !deckReady) { buildFilters(); applyFilter('all'); deckReady = true; }
   window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+}
+
+function defineReading() {
+  const box = document.getElementById('rp-src');
+  const t = box.value.trim();
+  if (!t) { box.focus(); return; }
+  document.getElementById('title').value = document.getElementById('rp-title').value.trim();
+  document.getElementById('src').value = t;
+  showTab('wordbank');
+  document.getElementById('start').click();
 }
 
 /* ---------------- readings popover ---------------- */
