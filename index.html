@@ -249,6 +249,12 @@
     .fc-inner, .pop, .v, .tab, .chip { transition: none; }
   }
 
+  /* ===================== Readings: tap any word ===================== */
+  #view-read .wx{ cursor:pointer; border-radius:3px; }
+  #view-read .wx:hover{ text-decoration:underline; text-decoration-color:var(--muted); text-underline-offset:.28em; }
+  #view-read .wx.active{ color:var(--ink); background-image:linear-gradient(to top, var(--hl-strong) 0 100%, var(--hl-strong) 0); background-repeat:no-repeat; }
+  #view-read .wx:focus-visible{ outline:2px solid var(--ink); outline-offset:2px; }
+
   /* ===================== Readings: paste box ===================== */
   #view-read .rp-box{ background:var(--surface); border:1px solid var(--hairline); border-radius:var(--r-lg); padding:24px; margin:34px 0 6px; }
   #view-read .rp-h{ font-family:var(--sans); font-weight:600; font-size:20px; letter-spacing:-.01em; margin:0 0 4px; color:var(--ink); }
@@ -347,8 +353,8 @@
   <div id="view-read">
     <section class="hero">
       <h1><span class="gword">ਪੰਜਾਬੀ</span> <span class="dot">·</span> Reading practice</h1>
-      <p class="sub">Every highlighted word is one to learn: tap it to see its pronunciation and meaning.</p>
-      <span class="tip"><span class="sw"></span> highlighted = tap to define</span>
+      <p class="sub">Tap any word to see its pronunciation and meaning. The highlighted words are the key vocabulary from each passage.</p>
+      <span class="tip"><span class="sw"></span> highlighted = key vocabulary</span>
     </section>
 
     <section class="rp-box">
@@ -1127,5 +1133,35 @@ $('clearDict').onclick = async () => { await idbDel('dict'); loaded = new Dict()
   if (saved && saved.entries){ loadedInfo = saved.info; buildLoaded(saved.entries); }
   updateDictStatus();
   if (state.text) showReader(); else showSetup();
+})();
+
+/* ---- readings: make every word tappable via the dictionary ---- */
+(function enableReadingLookup(){
+  document.querySelectorAll('#view-read .passage p').forEach(p => {
+    Array.from(p.childNodes).forEach(node => {
+      if (node.nodeType !== 3) return;               // text nodes only (leaves .v buttons + .latin spans)
+      const text = node.nodeValue;
+      if (!PA.test(text)) return;
+      const frag = document.createDocumentFragment(); let last = 0;
+      text.replace(TOKEN, (m, off) => {
+        if (off > last) frag.append(text.slice(last, off));
+        if (isNum(m)) frag.append(m);
+        else { const s = document.createElement('span'); s.className = 'wx'; s.textContent = m; s.dataset.w = norm(m); s.tabIndex = 0; s.setAttribute('role','button'); frag.append(s); }
+        last = off + m.length; return m;
+      });
+      if (last < text.length) frag.append(text.slice(last));
+      p.replaceChild(frag, node);
+    });
+  });
+  function wxDefine(s){
+    const d = describe(s.dataset.w);
+    s.dataset.tl = d.t || '';
+    s.dataset.def = d.found ? d.m : 'Not in the dictionary yet';
+    openPop(s);
+  }
+  document.querySelectorAll('#view-read .passage').forEach(box => {
+    box.addEventListener('click', e => { const s = e.target.closest('.wx'); if (!s) return; e.stopPropagation(); wxDefine(s); });
+    box.addEventListener('keydown', e => { const s = e.target.closest('.wx'); if (s && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); wxDefine(s); } });
+  });
 })();
 </script>
